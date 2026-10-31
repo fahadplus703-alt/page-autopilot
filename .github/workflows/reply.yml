@@ -1,0 +1,29 @@
+name: Reply to comments
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+concurrency: repo-write
+permissions:
+  contents: write
+jobs:
+  reply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests
+      - name: Reply to new comments
+        env:
+          MM_PAGE_TOKEN: ${{ secrets.MM_PAGE_TOKEN }}
+          DL_PAGE_TOKEN: ${{ secrets.DL_PAGE_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python bot/reply_comments.py
+      - name: Save reply state
+        run: |
+          git config user.name "page-autopilot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || (git commit -m "Comment reply state" && git pull --rebase && git push)
