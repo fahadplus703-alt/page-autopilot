@@ -1,0 +1,27 @@
+name: Check page connections
+on: workflow_dispatch
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests
+      - name: Show which pages and Instagram accounts the tokens reach
+        env:
+          MM_PAGE_TOKEN: ${{ secrets.MM_PAGE_TOKEN }}
+          DL_PAGE_TOKEN: ${{ secrets.DL_PAGE_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json, sys
+          sys.path.insert(0, "bot")
+          from graph import page_info, token_for, call
+          for slug, cfg in json.load(open("config/pages.json")).items():
+              try:
+                  t = token_for(cfg); i = page_info(t)
+                  ig = call("GET", i["ig_id"], t, fields="username")["username"] if i["ig_id"] else None
+                  print(f"{slug}: page '{i['name']}' ok, Instagram: {ig or 'NOT LINKED'}")
+              except Exception as e:
+                  print(f"{slug}: PROBLEM - {e}")
+          PY
