@@ -1,0 +1,28 @@
+name: Post due Reels
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+concurrency: repo-write
+permissions:
+  contents: write
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install requests
+      - name: Publish everything that is due
+        env:
+          MM_PAGE_TOKEN: ${{ secrets.MM_PAGE_TOKEN }}
+          DL_PAGE_TOKEN: ${{ secrets.DL_PAGE_TOKEN }}
+        run: python bot/post_due.py
+      - name: Save queue state
+        run: |
+          git config user.name "page-autopilot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || (git commit -m "Posted due Reels" && git pull --rebase && git push)
