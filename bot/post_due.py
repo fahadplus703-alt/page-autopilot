@@ -8,6 +8,7 @@ Queue item: queue/<page-slug>/<anything>.json
   "caption": "...",
   "post_to": ["facebook", "instagram"]                   (optional, defaults to the page config)
 }
+Photo post (static): use "image": "media/<slug>/<file>.jpg" instead of "video" (no cover).
 Posted items move to posted/<page-slug>/ with the returned ids; failures stay queued with an "errors" list.
 """
 import json
@@ -64,6 +65,25 @@ def post_instagram_reel(info, token, video_url, caption, cover_url=None):
     return call("POST", f"{ig}/media_publish", token, creation_id=container)["id"]
 
 
+def post_facebook_photo(info, token, image_url, caption):
+    return call("POST", f"{info['page_id']}/photos", token, url=image_url, caption=caption, published="true").get("post_id") or "ok"
+
+
+def post_instagram_photo(info, token, image_url, caption):
+    ig = info["ig_id"]
+    if not ig:
+        raise GraphError("no Instagram business account linked to this page")
+    container = call("POST", f"{ig}/media", token, image_url=image_url, caption=caption)["id"]
+    for _ in range(12):
+        st = call("GET", container, token, fields="status_code")
+        if st.get("status_code") in ("FINISHED", None):
+            break
+        if st.get("status_code") == "ERROR":
+            raise GraphError("IG image processing error")
+        time.sleep(5)
+    return call("POST", f"{ig}/media_publish", token, creation_id=container)["id"]
+
+
 def main():
     pages = json.loads((ROOT / "config/pages.json").read_text())
     now = datetime.now(timezone.utc)
@@ -88,13 +108,19 @@ def main():
             continue
         for f, item in due:
             results, errors = item.get("results", {}), []
-            video_url = raw_url(item["video"])
+            is_photo = bool(item.get("image"))
+            video_url = raw_url(item["video"]) if item.get("video") else None
+            image_url = raw_url(item["image"]) if is_photo else None
             cover_url = raw_url(item["cover"]) if item.get("cover") else None
             for net in item.get("post_to", cfg["post_to"]):
                 if net in results:
                     continue
                 try:
-                    if net == "facebook":
+                    if is_photo and net == "facebook":
+                        results[net] = post_facebook_photo(info, token, image_url, item["caption"])
+                    elif is_photo and net == "instagram":
+                        results[net] = post_instagram_photo(info, token, image_url, item["caption"])
+                    elif net == "facebook":
                         results[net] = post_facebook_reel(info, token, video_url, item["caption"])
                     elif net == "instagram":
                         results[net] = post_instagram_reel(info, token, video_url, item["caption"], cover_url)
@@ -115,7 +141,7 @@ def main():
                 f.unlink()
                 # free repo space: media is no longer needed once posted everywhere
                 if all(n in results for n in targets):
-                    for key in ("video", "cover"):
+                    for key in ("video", "cover", "image"):
                         p = ROOT / item[key] if item.get(key) else None
                         if p and p.exists():
                             p.unlink()

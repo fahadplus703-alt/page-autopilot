@@ -1,4 +1,4 @@
-name: Post due Reels
+name: Post due Reels + photos
 on:
   schedule:
     - cron: "*/15 * * * *"
