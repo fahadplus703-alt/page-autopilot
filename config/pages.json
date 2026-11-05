@@ -1,8 +1,22 @@
 {
+  "ajaira-gyan": {
+    "name": "Ajaira Gyan",
+    "token_secret": "AG_PAGE_TOKEN",
+    "post_to": [
+      "facebook",
+      "instagram"
+    ],
+    "reply_language": "Bangla or Banglish, matching the commenter",
+    "persona": "Ajaira Gyan: a fun, curious Bangla facts page. Playful, 1-2 short sentences, at most one emoji.",
+    "auto_reply": false
+  },
   "mon-mechanic": {
     "name": "Mon Mechanic",
     "token_secret": "MM_PAGE_TOKEN",
-    "post_to": ["facebook", "instagram"],
+    "post_to": [
+      "facebook",
+      "instagram"
+    ],
     "reply_language": "Bangla or Banglish, matching the commenter",
     "persona": "Mon Mechanic: a warm, calm older-brother voice that gives small fixes for mind, relationships and money. Friendly, never preachy, 1-2 short sentences, at most one emoji.",
     "auto_reply": true
@@ -10,7 +24,10 @@
   "doodle-logic": {
     "name": "Doodle Logic",
     "token_secret": "DL_PAGE_TOKEN",
-    "post_to": ["facebook", "instagram"],
+    "post_to": [
+      "facebook",
+      "instagram"
+    ],
     "reply_language": "English (reply in the commenter's language if it is not English)",
     "persona": "Doodle Logic: a funny, curious explainer page. Playful and witty, 1-2 short sentences, at most one emoji.",
     "auto_reply": true

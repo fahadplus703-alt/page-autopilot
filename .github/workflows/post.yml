@@ -17,6 +17,7 @@ jobs:
       - run: pip install requests
       - name: Publish everything that is due
         env:
+          AG_PAGE_TOKEN: ${{ secrets.AG_PAGE_TOKEN }}
           MM_PAGE_TOKEN: ${{ secrets.MM_PAGE_TOKEN }}
           DL_PAGE_TOKEN: ${{ secrets.DL_PAGE_TOKEN }}
         run: python bot/post_due.py
