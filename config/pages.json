@@ -8,7 +8,7 @@
     ],
     "reply_language": "Bangla or Banglish, matching the commenter",
     "persona": "Ajaira Gyan: a fun, curious Bangla facts page. Playful, 1-2 short sentences, at most one emoji.",
-    "auto_reply": false
+    "auto_reply": true
   },
   "mon-mechanic": {
     "name": "Mon Mechanic",
